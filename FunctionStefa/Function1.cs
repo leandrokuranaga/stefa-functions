@@ -29,7 +29,23 @@ namespace FunctionStefa
                 ? "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response."
                 : $"Hello, {name}. This HTTP triggered function executed successfully.";
 
-            return new OkObjectResult(responseMessage);
+            var response = new ContentResult
+            {
+                Content = JsonConvert.SerializeObject(new { message = responseMessage }),
+                ContentType = "application/json",
+                StatusCode = 200 
+            };
+
+            if (!req.Headers.ContainsKey("Origin"))
+            {
+                return response;
+            }
+
+            req.HttpContext.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+            req.HttpContext.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST");
+            req.HttpContext.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type");
+
+            return response;
         }
     }
 }
